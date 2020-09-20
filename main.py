@@ -65,7 +65,7 @@ class Info(BaseModel):
 def main():
     return RedirectResponse(url="/docs/")
 
-@app.get("/cliente/", response_model=List[schemas.Client])
+@app.get("/clients/", response_model=List[schemas.Client])
 def show_records(db: Session = Depends(get_db)):
     """Retorna lista de clientes armazenados no banco de dados.
     """
