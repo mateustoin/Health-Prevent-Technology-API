@@ -9,6 +9,8 @@ fastapi = "*"
 uvicorn = "*"
 pydantic = "*"
 sqlalchemy = "*"
+totalvoice = "*"
+requests = "*"
 
 [dev-packages]
 

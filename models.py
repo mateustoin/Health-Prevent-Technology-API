@@ -3,7 +3,7 @@ from sqlalchemy.types import Date
 
 from database import Base
 
-class Cliente(Base):
+class Client(Base):
     __tablename__ = "Cliente"
 
     id = Column(Integer, primary_key=True, index=True)
