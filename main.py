@@ -136,10 +136,9 @@ def send_sms(numero: str, mensagem: str):
 @app.post("/notification/sms/disease/", response_model=List[schemas.Client])
 async def spread_notification_body_disease(item: Info, db: Session = Depends(get_db), background_tasks: BackgroundTasks = BackgroundTasks):
     records = db.query(models.Client).filter_by(doenca = item.clinicalCondition).all()
-
-    message = item.eventName + '\n' + item.message
     
     for dados in records:
+        message = item.company + ': ' + dados.nome.split(' ')[0] + ', ' + item.message
         background_tasks.add_task(send_sms, dados.numero_telefone, message)
 
     return records
@@ -148,10 +147,9 @@ async def spread_notification_body_disease(item: Info, db: Session = Depends(get
 async def spread_notification_body_age(item: Info, db: Session = Depends(get_db), background_tasks: BackgroundTasks = BackgroundTasks):
     records = db.query(models.Client).filter(models.Client.idade >= item.minAge)
     records = records.filter(models.Client.idade <= item.maxAge).all()
-
-    message = item.company + ': ' + item.message
     
     for dados in records:
+        message = item.company + ': ' + dados.nome.split(' ')[0] + ', ' + item.message
         background_tasks.add_task(send_sms, dados.numero_telefone, message)
 
     return records
