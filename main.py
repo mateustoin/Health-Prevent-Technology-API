@@ -1,7 +1,7 @@
-import requests
 from totalvoice.cliente import Cliente
 
-from typing import List
+from pydantic import BaseModel
+from typing import List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,50 +30,54 @@ def get_db():
         yield db
     finally:
         db.close()
-
-# Criando base para os requests de envio de mensagens
-def envia_mensagem(numero, mensagem):
-    headers = {
-        'Content-Type': 'application/json',
-        'Access-Token': 'b9f0bbbca94a96afbdac456f5ec2658b'
-    }
+        
+class Info(BaseModel):
+    eventName: str
+    minAge: Optional[int] = None
+    maxAge: Optional[int] = None
+    clinicalCondition: str
+    message: str
+    company: Optional[str] = None
     
-    json = {
-        "numero_destino": numero,
-		"mensagem": mensagem
-    }
-    url = 'https://api2.totalvoice.com.br/sms'
-    requests.post(url, headers = headers, data=json)
-
+class InfoDisease(BaseModel):
+    eventName: str
+    clinicalCondition: str
+    message: str
+    company: str
+    
 @app.get("/")
 def main():
     return RedirectResponse(url="/docs/")
 
-@app.get("/clientes/", response_model=List[schemas.Client])
+@app.get("/cliente/", response_model=List[schemas.Client])
 def show_records(db: Session = Depends(get_db)):
+    """Retorna lista de clientes armazenados no banco de dados.
+    """
     records = db.query(models.Client).all()
+    
     return records
 
-@app.get("/clientes/doenca/{tipo_doenca}", response_model=List[schemas.Client])
-def retorna_pela_doenca(tipo_doenca: str, db: Session = Depends(get_db)):
-    records = db.query(models.Client).filter_by(doenca=tipo_doenca).all()
+@app.get("/clients/disease/{type_disease}", response_model=List[schemas.Client])
+def retorna_por_doenca(type_disease: str, db: Session = Depends(get_db)):
+    records = db.query(models.Client).filter_by(doenca=type_disease).all()
+    
     return records
 
-@app.get("/clientes/idade/{min}/{max}", response_model=List[schemas.Client])
+@app.get("/clients/age/{min}/{max}", response_model=List[schemas.Client])
 def retorna_intervalo_idade(min: int, max: int, db: Session = Depends(get_db)):
     records = db.query(models.Client).filter(models.Client.idade >= min)
     records = records.filter(models.Client.idade <= max).all()
     
     return records
 
-@app.get("/clientes/idade/menor/{idade}", response_model=List[schemas.Client])
-def retorna_menorque_idade(idade: int, db: Session = Depends(get_db)):
+@app.get("/clients/age/min/{idade}", response_model=List[schemas.Client])
+def retorna_menor_que_idade(idade: int, db: Session = Depends(get_db)):
     records = db.query(models.Client).filter(models.Client.idade <= idade).all()
     
     return records
 
-@app.get("/clientes/idade/maior/{idade}", response_model=List[schemas.Client])
-def retorna_maiorque_idade(idade: int, db: Session = Depends(get_db)):
+@app.get("/clients/age/max/{idade}", response_model=List[schemas.Client])
+def retorna_maior_que_idade(idade: int, db: Session = Depends(get_db)):
     records = db.query(models.Client).filter(models.Client.idade >= idade).all()
     
     return records
@@ -81,14 +85,42 @@ def retorna_maiorque_idade(idade: int, db: Session = Depends(get_db)):
 @app.get("/notification/{tipo_doenca}", response_model=List[schemas.Client])
 def spread_notification(tipo_doenca: str, db: Session = Depends(get_db)):
     records = db.query(models.Client).filter_by(doenca=tipo_doenca).all()
-    return records
     
+    return records
+
+# Endpoints com background tasks
+def send_sms(numero: str, mensagem: str):
+    sms_client = Cliente('b9f0bbbca94a96afbdac456f5ec2658b', 'https://api2.totalvoice.com.br/sms')
+    response = sms_client.sms.enviar(numero, mensagem)
+
 @app.get("/notification/sms/doenca/{tipo_doenca}", response_model=List[schemas.Client])
-def spread_notification_doenca(tipo_doenca: str, db: Session = Depends(get_db)):
+async def spread_notification_doenca(tipo_doenca: str, db: Session = Depends(get_db), background_tasks: BackgroundTasks = BackgroundTasks):
     records = db.query(models.Client).filter_by(doenca=tipo_doenca).all()
 
     for dados in records:
-        sms_client = Cliente('b9f0bbbca94a96afbdac456f5ec2658b', 'https://api2.totalvoice.com.br/sms')
-        response = sms_client.sms.enviar(dados.numero_telefone, "Parabéns, você está doente e um dia vai morrer!")
+        background_tasks.add_task(send_sms, dados.numero_telefone, "Parabéns, você está doente e um dia vai morrer!")
+
+    return records
+
+@app.post("/notification/sms/disease/", response_model=List[schemas.Client])
+async def spread_notification_body_disease(item: Info, db: Session = Depends(get_db), background_tasks: BackgroundTasks = BackgroundTasks):
+    records = db.query(models.Client).filter_by(doenca = item.clinicalCondition).all()
+
+    message = item.eventName + '\n' + item.message
+    
+    for dados in records:
+        background_tasks.add_task(send_sms, dados.numero_telefone, message)
+
+    return records
+
+@app.post("/notification/sms/age/", response_model=List[schemas.Client])
+async def spread_notification_body_age(item: Info, db: Session = Depends(get_db), background_tasks: BackgroundTasks = BackgroundTasks):
+    records = db.query(models.Client).filter(models.Client.idade >= item.minAge)
+    records = records.filter(models.Client.idade <= item.maxAge).all()
+
+    message = item.eventName + ': ' + item.message
+    
+    for dados in records:
+        background_tasks.add_task(send_sms, dados.numero_telefone, message)
 
     return records
