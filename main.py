@@ -106,13 +106,13 @@ def retorna_maior_que_idade(idade: int, db: Session = Depends(get_db)):
     records = db.query(models.Client).filter(models.Client.idade >= idade).all()
     
     return records
-'''
 
 @app.get("/notification/{tipo_doenca}", response_model=List[schemas.Client])
 def spread_notification(tipo_doenca: str, db: Session = Depends(get_db)):
     records = db.query(models.Client).filter_by(doenca=tipo_doenca).all()
     
     return records
+'''
 
 '''
 @app.get("/notification/sms/doenca/{tipo_doenca}", response_model=List[schemas.Client])
