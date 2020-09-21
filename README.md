@@ -1,4 +1,15 @@
-# Health Prevent Technology
+<h1 align="center">
+  <img src="https://raw.githubusercontent.com/marismarcosta/health-prevent-technology-web/master/.github/logo.svg">
+</h1>
+
+[![Linkedin Badge](https://img.shields.io/badge/-Marismar%20Costa-0282d0?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/marismarcosta/)](https://www.linkedin.com/in/marismarcosta/) 
+[![Linkedin Badge](https://img.shields.io/badge/-Gustavo%20Eraldo-0282d0?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/gustavoeraldo/)](https://www.linkedin.com/in/gustavoeraldo/)
+[![Linkedin Badge](https://img.shields.io/badge/-Mateus%20Antonio-0282d0?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/mateus-antonio-robotica/)](https://www.linkedin.com/in/mateus-antonio-robotica/)
+[![Linkedin Badge](https://img.shields.io/badge/-João%20Galvão-0282d0?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/jvictor-galvao/)](https://www.linkedin.com/in/jvictor-galvao/)
+
+<h3 align="center">
+  Comunicação como chave para promoção da saúde preventiva.
+</h3>
 
 ## Introdução
 
@@ -86,3 +97,8 @@
 <p>
     Envia mensagem de voz para os clientes da operadora de plano de saúde filtrados pela idade.
 </p>
+
+## Licença
+
+Copyright © 2020 [Mateus Antonio da Silva](https://github.com/mateustoin), [João Victor Galvão](https://github.com/JVictorGalvao), [Marismar da Costa Silva](https://github.com/marismarcosta), [Gustavo Eraldo da Silva](https://github.com/EraldoCi).<br />
+This project is [MIT](https://github.com/marismarcosta/wireless-network/blob/master/LICENSE) licensed.
